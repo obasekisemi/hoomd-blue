@@ -83,6 +83,7 @@ class PYBIND11_EXPORT ReverseNonequilibriumShearFlow : public Updater
 
     protected:
     std::shared_ptr<mpcd::ParticleData> m_mpcd_pdata; //!< MPCD particle data
+    ParticleLoaderT m_particle_loader;                //!< Loader accessing MPCD paritcle data
 
     unsigned int m_num_swap;  //!< Maximum number of swaps
     Scalar m_slab_width;      //!< Width of slabs
@@ -133,10 +134,10 @@ ReverseNonequilibriumShearFlow<ParticleLoaderT>::ReverseNonequilibriumShearFlow(
     unsigned int num_swap,
     Scalar slab_width,
     Scalar target_momentum)
-    : Updater(sysdef, trigger), m_mpcd_pdata(sysdef->getMPCDParticleData()), m_num_swap(num_swap),
-      m_slab_width(slab_width), m_target_momentum(target_momentum), m_summed_momentum_exchange(0),
-      m_num_lo(0), m_particles_lo(m_exec_conf), m_num_hi(0), m_particles_hi(m_exec_conf),
-      m_update_slabs(true)
+    : Updater(sysdef, trigger), m_mpcd_pdata(sysdef->getMPCDParticleData()),
+      m_particle_loader(sysdef), m_num_swap(num_swap), m_slab_width(slab_width),
+      m_target_momentum(target_momentum), m_summed_momentum_exchange(0), m_num_lo(0),
+      m_particles_lo(m_exec_conf), m_num_hi(0), m_particles_hi(m_exec_conf), m_update_slabs(true)
     {
     m_exec_conf->msg->notice(5) << "Constructing ReverseNonequilibriumShearFlow" << std::endl;
 
@@ -241,10 +242,10 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::findSwapParticles()
         const size_t num_lo_alloc = m_particles_lo.getNumElements();
         const size_t num_hi_alloc = m_particles_hi.getNumElements();
             {
-            ArrayHandle<Scalar4> h_pos(m_mpcd_pdata->getPositions(),
+            ArrayHandle<Scalar4> h_pos(m_particle_loader.getPositions(),
                                        access_location::host,
                                        access_mode::read);
-            ArrayHandle<Scalar4> h_vel(m_mpcd_pdata->getVelocities(),
+            ArrayHandle<Scalar4> h_vel(m_particle_loader.getVelocities(),
                                        access_location::host,
                                        access_mode::read);
 
@@ -258,7 +259,8 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::findSwapParticles()
             // filter particles into their slab in y-direction and record momentum in x-direction
             m_num_lo = 0;
             m_num_hi = 0;
-            for (unsigned int idx = 0; idx < m_mpcd_pdata->getN(); ++idx)
+            const auto N = m_particle_loader.getN();
+            for (unsigned int idx = 0; idx < N; ++idx)
                 {
                 const Scalar4 vel = h_vel.data[idx];
                 const Scalar momentum = vel.x * m_mpcd_pdata->getMass();
@@ -313,7 +315,7 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::sortOutSwapParticles()
     ArrayHandle<Scalar2> h_particles_hi(m_particles_hi,
                                         access_location::host,
                                         access_mode::readwrite);
-    ArrayHandle<unsigned int> h_tag(m_mpcd_pdata->getTags(),
+    ArrayHandle<unsigned int> h_tag(m_particle_loader.getTags(),
                                     access_location::host,
                                     access_mode::read);
 
@@ -478,7 +480,7 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::stageSwapParticles()
 template<class ParticleLoaderT>
 void ReverseNonequilibriumShearFlow<ParticleLoaderT>::swapParticleMomentum()
     {
-    ArrayHandle<Scalar4> h_vel(m_mpcd_pdata->getVelocities(),
+    ArrayHandle<Scalar4> h_vel(m_particle_loader.getVelocities(),
                                access_location::host,
                                access_mode::readwrite);
     ArrayHandle<Scalar2> h_particles_staged(m_particles_staged,
@@ -519,14 +521,14 @@ namespace detail
     \tparam ParticleLoaderT Evaluator type to export.
  */
 
-template<class ParticleLoaderT> void export_ReverseNonequilibriumShearFlow(pybind11::module& m, const std::string& name)
+template<class ParticleLoaderT>
+void export_ReverseNonequilibriumShearFlow(pybind11::module& m, const std::string& name)
     {
     namespace py = pybind11;
     py::class_<mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>,
                Updater,
-               std::shared_ptr<mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>>>(
-        m,
-        name.c_str())
+               std::shared_ptr<mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>>>(m,
+                                                                                       name.c_str())
         .def(py::init<std::shared_ptr<SystemDefinition>,
                       std::shared_ptr<Trigger>,
                       unsigned int,
