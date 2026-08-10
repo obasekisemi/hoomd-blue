@@ -13,7 +13,7 @@ template class ReverseNonequilibriumShearFlow<ParticleLoader>;
 
 namespace detail
     {
-void export_ReverseNonequilibriumShearFlowLoader(pybind11::module& m)
+void export_ReverseNonequilibriumShearFlow(pybind11::module& m)
     {
     export_ReverseNonequilibriumShearFlow<ParticleLoader>(m,"ReverseNonequilibriumShearFlow");
     }

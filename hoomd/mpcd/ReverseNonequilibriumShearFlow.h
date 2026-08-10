@@ -259,7 +259,7 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::findSwapParticles()
             // filter particles into their slab in y-direction and record momentum in x-direction
             m_num_lo = 0;
             m_num_hi = 0;
-            const auto N = m_particle_loader.getN();
+            const unsigned int N = m_particle_loader.getN();
             for (unsigned int idx = 0; idx < N; ++idx)
                 {
                 const Scalar4 vel = h_vel.data[idx];

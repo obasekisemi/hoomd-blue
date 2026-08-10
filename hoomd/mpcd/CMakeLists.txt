@@ -39,8 +39,8 @@ set(_mpcd_headers
     ManualVirtualParticleFiller.h
     ParticleData.h
     ParticleDataSnapshot.h
-    ParticleLoader.h
     ParticleDataUtilities.h
+    ParticleLoader.h
     ParallelPlateGeometryFiller.h
     PlanarPoreGeometryFiller.h
     RejectionVirtualParticleFiller.h
