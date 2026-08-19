@@ -1,12 +1,6 @@
 // Copyright (c) 2009-2026 The Regents of the University of Michigan.
 // Part of HOOMD-blue, released under the BSD 3-Clause License.
 
-/*!
- * \file mpcd/ReverseNonequilibriumShearFlow.h
- * \brief Declaration of reverse nonequilibrium shear flow updater and Definition of reverse
- * nonequilibrium shear flow updater.
- */
-
 #include <algorithm>
 
 #include "ReverseNonequilibriumShearFlowUtilities.h"
@@ -260,10 +254,13 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::findSwapParticles()
             m_num_lo = 0;
             m_num_hi = 0;
             const unsigned int N = m_particle_loader.getN();
+            auto reader = m_particle_loader.makeVelocityMassReader(h_vel.data);
             for (unsigned int idx = 0; idx < N; ++idx)
                 {
-                const Scalar4 vel = h_vel.data[idx];
-                const Scalar momentum = vel.x * m_mpcd_pdata->getMass();
+                Scalar mass;
+                Scalar3 velocity;
+                reader.read(velocity, mass, idx);
+                const Scalar momentum = velocity.x * mass;
                 const Scalar y = h_pos.data[idx].y;
                 if (m_pos_lo.x <= y && y < m_pos_lo.y
                     && momentum > Scalar(0.0)) // lower slab, search for positive momentum
@@ -489,15 +486,18 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::swapParticleMomentum()
 
     // perform swap and sum momentum exchange
     Scalar momentum_sum(0);
-    const Scalar mass = m_mpcd_pdata->getMass();
+    auto reader = m_particle_loader.makeVelocityMassReader(h_vel.data);
     for (unsigned int i = 0; i < m_num_staged; ++i)
         {
         const Scalar2 pidx_mom = h_particles_staged.data[i];
         const unsigned int pidx = __scalar_as_int(pidx_mom.x);
         const Scalar new_momentum = pidx_mom.y;
 
-        const Scalar current_momentum = h_vel.data[pidx].x * mass;
+        Scalar mass;
+        Scalar3 velocity;
+        reader.read(velocity, mass, pidx);
 
+        const Scalar current_momentum = velocity.x * mass;
         h_vel.data[pidx].x = new_momentum / mass;
         momentum_sum += std::fabs(new_momentum - current_momentum);
         }

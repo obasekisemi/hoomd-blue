@@ -11,7 +11,6 @@ namespace mpcd
 struct ParticleLoader
     {
     ParticleLoader(std::shared_ptr<SystemDefinition> sysdef)
-
         : m_mpcd_pdata(sysdef->getMPCDParticleData())
         {
         }
@@ -34,6 +33,31 @@ struct ParticleLoader
 
     private:
     std::shared_ptr<mpcd::ParticleData> m_mpcd_pdata; //!< MPCD particle data
+
+    public:
+    class VelocityMassReader
+        {
+        public:
+        VelocityMassReader(const Scalar4* velcell, Scalar mass) : m_velcell(velcell), m_mass(mass)
+            {
+            }
+        void read(Scalar3& velocity, Scalar& mass, unsigned int idx) const
+            {
+            const Scalar4 velcell = m_velcell[idx];
+            velocity.x = velcell.x;
+            velocity.y = velcell.y;
+            velocity.z = velcell.z;
+            mass = m_mass;
+            }
+
+        private:
+        const Scalar4* m_velcell;
+        Scalar m_mass;
+        };
+    VelocityMassReader makeVelocityMassReader(const Scalar4* velcell) const
+        {
+        return VelocityMassReader(velcell, m_mpcd_pdata->getMass());
+        }
     };
     } // namespace mpcd
 
