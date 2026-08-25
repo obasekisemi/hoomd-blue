@@ -20,6 +20,7 @@ set(_md_sources module-md.cc
                    CosineSqAngleForceCompute.cc
                    CustomForceCompute.cc
                    EvaluatorWalls.cc
+                   export_ReverseNonequilibriumShearFlow.cc
                    FIREEnergyMinimizer.cc
                    ForceComposite.cc
                    ForceDistanceConstraint.cc
@@ -222,6 +223,8 @@ set(_md_headers ActiveForceComputeGPU.h
                 FrictionPairGPU.cuh
                 FrictionPairGPU.h
                 FrictionPair.h
+                ReverseNonequilibriumShearFlow.h
+                ReverseNonequilibriumShearFlowUtilities.h
                 TableAngleForceComputeGPU.h
                 TableAngleForceCompute.h
                 TableAngleForceGPU.cuh

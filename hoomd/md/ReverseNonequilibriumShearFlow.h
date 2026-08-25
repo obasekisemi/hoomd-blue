@@ -5,8 +5,8 @@
 
 #include "ReverseNonequilibriumShearFlowUtilities.h"
 
-#ifndef MPCD_REVERSE_NONEQUILIBRIUM_SHEAR_FLOW_H_
-#define MPCD_REVERSE_NONEQUILIBRIUM_SHEAR_FLOW_H_
+#ifndef MD_REVERSE_NONEQUILIBRIUM_SHEAR_FLOW_H_
+#define MD_REVERSE_NONEQUILIBRIUM_SHEAR_FLOW_H_
 
 #ifdef __HIPCC__
 #error This header cannot be compiled by nvcc
@@ -18,7 +18,7 @@
 
 namespace hoomd
     {
-namespace mpcd
+namespace md
     {
 //! Reverse nonequilibrium shear flow updater
 /*!
@@ -136,8 +136,8 @@ ReverseNonequilibriumShearFlow<ParticleLoaderT>::ReverseNonequilibriumShearFlow(
     m_exec_conf->msg->notice(5) << "Constructing ReverseNonequilibriumShearFlow" << std::endl;
 
     m_pdata->getBoxChangeSignal()
-        .connect<mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>,
-                 &mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>::requestUpdateSlabs>(this);
+        .connect<md::ReverseNonequilibriumShearFlow<ParticleLoaderT>,
+                 &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::requestUpdateSlabs>(this);
 
     GPUArray<Scalar2> particles_staged(2 * m_num_swap, m_exec_conf);
     m_particles_staged.swap(particles_staged);
@@ -148,9 +148,8 @@ ReverseNonequilibriumShearFlow<ParticleLoaderT>::~ReverseNonequilibriumShearFlow
     {
     m_exec_conf->msg->notice(5) << "Destroying ReverseNonequilibriumShearFlow" << std::endl;
     m_pdata->getBoxChangeSignal()
-        .disconnect<mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>,
-                    &mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>::requestUpdateSlabs>(
-            this);
+        .disconnect<md::ReverseNonequilibriumShearFlow<ParticleLoaderT>,
+                    &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::requestUpdateSlabs>(this);
     }
 
 /*!
@@ -525,30 +524,30 @@ template<class ParticleLoaderT>
 void export_ReverseNonequilibriumShearFlow(pybind11::module& m, const std::string& name)
     {
     namespace py = pybind11;
-    py::class_<mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>,
+    py::class_<md::ReverseNonequilibriumShearFlow<ParticleLoaderT>,
                Updater,
-               std::shared_ptr<mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>>>(m,
-                                                                                       name.c_str())
+               std::shared_ptr<md::ReverseNonequilibriumShearFlow<ParticleLoaderT>>>(m,
+                                                                                     name.c_str())
         .def(py::init<std::shared_ptr<SystemDefinition>,
                       std::shared_ptr<Trigger>,
                       unsigned int,
                       Scalar,
                       Scalar>())
         .def_property("num_swaps",
-                      &mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>::getNumSwap,
-                      &mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>::setNumSwap)
+                      &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::getNumSwap,
+                      &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::setNumSwap)
         .def_property("slab_width",
-                      &mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>::getSlabWidth,
-                      &mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>::setSlabWidth)
+                      &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::getSlabWidth,
+                      &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::setSlabWidth)
         .def_property("target_momentum",
-                      &mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>::getTargetMomentum,
-                      &mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>::setTargetMomentum)
+                      &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::getTargetMomentum,
+                      &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::setTargetMomentum)
         .def_property_readonly(
             "summed_exchanged_momentum",
-            &mpcd::ReverseNonequilibriumShearFlow<ParticleLoaderT>::getSummedExchangedMomentum);
+            &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::getSummedExchangedMomentum);
     }
     } // namespace detail
 
-    } // end namespace mpcd
+    } // end namespace md
     } // end namespace hoomd
-#endif // MPCD_REVERSE_NONEQUILIBRIUM_SHEAR_FLOW_H_
+#endif // MD_REVERSE_NONEQUILIBRIUM_SHEAR_FLOW_H_

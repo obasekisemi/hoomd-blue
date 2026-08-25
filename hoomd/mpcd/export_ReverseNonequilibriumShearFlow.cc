@@ -2,19 +2,20 @@
 // Part of HOOMD-blue, released under the BSD 3-Clause License.
 
 #include "ParticleLoader.h"
-#include "ReverseNonequilibriumShearFlow.h"
+#include "hoomd/md/ReverseNonequilibriumShearFlow.h"
 
 namespace hoomd
     {
+template class md::ReverseNonequilibriumShearFlow<mpcd::ParticleLoader>;
 namespace mpcd
     {
-template class ReverseNonequilibriumShearFlow<ParticleLoader>;
-
 namespace detail
     {
 void export_ReverseNonequilibriumShearFlow(pybind11::module& m)
     {
-    export_ReverseNonequilibriumShearFlow<ParticleLoader>(m, "ReverseNonequilibriumShearFlow");
+    md::detail::export_ReverseNonequilibriumShearFlow<ParticleLoader>(
+        m,
+        "ReverseNonequilibriumShearFlow");
     }
     } // namespace detail
 
