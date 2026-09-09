@@ -8,8 +8,9 @@ namespace hoomd
     {
 namespace mpcd
     {
-struct ParticleLoader
+class ParticleLoader
     {
+    public:
     ParticleLoader(std::shared_ptr<SystemDefinition> sysdef)
         : m_mpcd_pdata(sysdef->getMPCDParticleData())
         {
@@ -41,6 +42,7 @@ struct ParticleLoader
         VelocityMassReader(const Scalar4* velcell, Scalar mass) : m_velcell(velcell), m_mass(mass)
             {
             }
+
         void read(Scalar3& velocity, Scalar& mass, unsigned int idx) const
             {
             const Scalar4 velcell = m_velcell[idx];

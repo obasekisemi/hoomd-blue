@@ -76,7 +76,6 @@ class PYBIND11_EXPORT ReverseNonequilibriumShearFlow : public Updater
         }
 
     protected:
-    std::shared_ptr<mpcd::ParticleData> m_mpcd_pdata; //!< MPCD particle data
     ParticleLoaderT m_particle_loader;                //!< Loader accessing MPCD paritcle data
 
     unsigned int m_num_swap;  //!< Maximum number of swaps
@@ -155,7 +154,6 @@ ReverseNonequilibriumShearFlow<ParticleLoaderT>::~ReverseNonequilibriumShearFlow
 /*!
  * \param num_swap Max number of swaps
  */
-
 template<class ParticleLoaderT>
 void ReverseNonequilibriumShearFlow<ParticleLoaderT>::setNumSwap(unsigned int num_swap)
     {
@@ -253,7 +251,7 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::findSwapParticles()
             m_num_lo = 0;
             m_num_hi = 0;
             const unsigned int N = m_particle_loader.getN();
-            auto reader = m_particle_loader.makeVelocityMassReader(h_vel.data);
+            const auto reader = m_particle_loader.makeVelocityMassReader(h_vel.data);
             for (unsigned int idx = 0; idx < N; ++idx)
                 {
                 Scalar mass;
@@ -485,7 +483,7 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::swapParticleMomentum()
 
     // perform swap and sum momentum exchange
     Scalar momentum_sum(0);
-    auto reader = m_particle_loader.makeVelocityMassReader(h_vel.data);
+    const auto reader = m_particle_loader.makeVelocityMassReader(h_vel.data);
     for (unsigned int i = 0; i < m_num_staged; ++i)
         {
         const Scalar2 pidx_mom = h_particles_staged.data[i];
