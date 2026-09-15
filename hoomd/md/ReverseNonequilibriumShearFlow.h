@@ -15,6 +15,7 @@
 #include "hoomd/ParticleGroup.h"
 #include "hoomd/Updater.h"
 #include <pybind11/pybind11.h>
+#include <type_traits>
 
 namespace hoomd
     {
@@ -25,13 +26,37 @@ namespace md
  * A flow is induced by swapping velocities in x direction based on particle position in
  * y-direction.
  */
+template<bool Use = false> class AddParticleGroup
+    {
+    };
+
+template<> class AddParticleGroup<true>
+    {
+    public:
+    AddParticleGroup(std::shared_ptr<ParticleGroup> group) : m_group(group) { }
+
+    protected:
+    std::shared_ptr<ParticleGroup> m_group;
+    };
+
 template<class ParticleLoaderT>
-class PYBIND11_EXPORT ReverseNonequilibriumShearFlow : public Updater
+class PYBIND11_EXPORT ReverseNonequilibriumShearFlow
+    : public Updater,
+      AddParticleGroup<ParticleLoaderT::use_particle_group>
     {
     public:
     //! Constructor
+    template<class T = ParticleLoaderT, std::enable_if_t<!T::use_particle_group, bool> = true>
     ReverseNonequilibriumShearFlow(std::shared_ptr<SystemDefinition> sysdef,
                                    std::shared_ptr<Trigger> trigger,
+                                   unsigned int num_swap,
+                                   Scalar slab_width,
+                                   Scalar target_momentum);
+    //! Constructor with ParticleGroup
+    template<class T = ParticleLoaderT, std::enable_if_t<T::use_particle_group, bool> = true>
+    ReverseNonequilibriumShearFlow(std::shared_ptr<SystemDefinition> sysdef,
+                                   std::shared_ptr<Trigger> trigger,
+                                   std::shared_ptr<ParticleGroup> group,
                                    unsigned int num_swap,
                                    Scalar slab_width,
                                    Scalar target_momentum);
@@ -76,7 +101,7 @@ class PYBIND11_EXPORT ReverseNonequilibriumShearFlow : public Updater
         }
 
     protected:
-    ParticleLoaderT m_particle_loader;                //!< Loader accessing MPCD paritcle data
+    ParticleLoaderT m_particle_loader; //!< Loader accessing Paritcle data
 
     unsigned int m_num_swap;  //!< Maximum number of swaps
     Scalar m_slab_width;      //!< Width of slabs
@@ -121,16 +146,41 @@ class PYBIND11_EXPORT ReverseNonequilibriumShearFlow : public Updater
     };
 
 template<class ParticleLoaderT>
+template<class T, std::enable_if_t<!T::use_particle_group, bool>>
 ReverseNonequilibriumShearFlow<ParticleLoaderT>::ReverseNonequilibriumShearFlow(
     std::shared_ptr<SystemDefinition> sysdef,
     std::shared_ptr<Trigger> trigger,
     unsigned int num_swap,
     Scalar slab_width,
     Scalar target_momentum)
-    : Updater(sysdef, trigger), m_mpcd_pdata(sysdef->getMPCDParticleData()),
-      m_particle_loader(sysdef), m_num_swap(num_swap), m_slab_width(slab_width),
-      m_target_momentum(target_momentum), m_summed_momentum_exchange(0), m_num_lo(0),
-      m_particles_lo(m_exec_conf), m_num_hi(0), m_particles_hi(m_exec_conf), m_update_slabs(true)
+    : Updater(sysdef, trigger), m_particle_loader(sysdef), m_num_swap(num_swap),
+      m_slab_width(slab_width), m_target_momentum(target_momentum), m_summed_momentum_exchange(0),
+      m_num_lo(0), m_particles_lo(m_exec_conf), m_num_hi(0), m_particles_hi(m_exec_conf),
+      m_update_slabs(true)
+    {
+    m_exec_conf->msg->notice(5) << "Constructing ReverseNonequilibriumShearFlow" << std::endl;
+
+    m_pdata->getBoxChangeSignal()
+        .connect<md::ReverseNonequilibriumShearFlow<ParticleLoaderT>,
+                 &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::requestUpdateSlabs>(this);
+
+    GPUArray<Scalar2> particles_staged(2 * m_num_swap, m_exec_conf);
+    m_particles_staged.swap(particles_staged);
+    }
+
+template<class ParticleLoaderT>
+template<class T, std::enable_if_t<T::use_particle_group, bool>>
+ReverseNonequilibriumShearFlow<ParticleLoaderT>::ReverseNonequilibriumShearFlow(
+    std::shared_ptr<SystemDefinition> sysdef,
+    std::shared_ptr<Trigger> trigger,
+    std::shared_ptr<ParticleGroup> group,
+    unsigned int num_swap,
+    Scalar slab_width,
+    Scalar target_momentum)
+    : Updater(sysdef, trigger), AddParticleGroup<true>(group), m_particle_loader(sysdef),
+      m_num_swap(num_swap), m_slab_width(slab_width), m_target_momentum(target_momentum),
+      m_summed_momentum_exchange(0), m_num_lo(0), m_particles_lo(m_exec_conf), m_num_hi(0),
+      m_particles_hi(m_exec_conf), m_update_slabs(true)
     {
     m_exec_conf->msg->notice(5) << "Constructing ReverseNonequilibriumShearFlow" << std::endl;
 
@@ -166,7 +216,6 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::setNumSwap(unsigned int nu
     }
 
 //! Set the target momentum
-
 template<class ParticleLoaderT>
 void ReverseNonequilibriumShearFlow<ParticleLoaderT>::setTargetMomentum(Scalar target_momentum)
     {
@@ -176,7 +225,6 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::setTargetMomentum(Scalar t
 /*!
  * \param slab_width Slab width
  */
-
 template<class ParticleLoaderT>
 void ReverseNonequilibriumShearFlow<ParticleLoaderT>::setSlabWidth(Scalar slab_width)
     {
@@ -200,7 +248,6 @@ template<class ParticleLoaderT> void ReverseNonequilibriumShearFlow<ParticleLoad
 /*!
  * \param timestep Current time step of the simulation
  */
-
 template<class ParticleLoaderT>
 void ReverseNonequilibriumShearFlow<ParticleLoaderT>::update(uint64_t timestep)
     {
@@ -222,7 +269,6 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::update(uint64_t timestep)
  * puts them into two GPUArrays, sorted by their momentum closest to -/+ target_momentum in x
  * direction.
  */
-
 template<class ParticleLoaderT>
 void ReverseNonequilibriumShearFlow<ParticleLoaderT>::findSwapParticles()
     {
@@ -348,7 +394,6 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::sortOutSwapParticles()
 /*!
  * Stage particles momenta from both slabs into a queue for swapping
  */
-
 template<class ParticleLoaderT>
 void ReverseNonequilibriumShearFlow<ParticleLoaderT>::stageSwapParticles()
     {
@@ -470,7 +515,6 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::stageSwapParticles()
 /*!
  * Apply new momenta to particles from the queue.
  */
-
 template<class ParticleLoaderT>
 void ReverseNonequilibriumShearFlow<ParticleLoaderT>::swapParticleMomentum()
     {
@@ -517,23 +561,35 @@ namespace detail
 /*! \param name Name of the class in the exported python module
     \tparam ParticleLoaderT Evaluator type to export.
  */
-
 template<class ParticleLoaderT>
 void export_ReverseNonequilibriumShearFlow(pybind11::module& m, const std::string& name)
     {
     namespace py = pybind11;
     py::class_<md::ReverseNonequilibriumShearFlow<ParticleLoaderT>,
                Updater,
-               std::shared_ptr<md::ReverseNonequilibriumShearFlow<ParticleLoaderT>>>(m,
-                                                                                     name.c_str())
-        .def(py::init<std::shared_ptr<SystemDefinition>,
-                      std::shared_ptr<Trigger>,
-                      unsigned int,
-                      Scalar,
-                      Scalar>())
-        .def_property("num_swaps",
-                      &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::getNumSwap,
-                      &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::setNumSwap)
+               std::shared_ptr<md::ReverseNonequilibriumShearFlow<ParticleLoaderT>>>
+        cls(m, name.c_str());
+
+    if constexpr (ParticleLoaderT::use_particle_group)
+        {
+        cls.def(py::init<std::shared_ptr<SystemDefinition>,
+                         std::shared_ptr<Trigger>,
+                         std::shared_ptr<ParticleGroup>,
+                         unsigned int,
+                         Scalar,
+                         Scalar>());
+        }
+    else
+        {
+        cls.def(py::init<std::shared_ptr<SystemDefinition>,
+                         std::shared_ptr<Trigger>,
+                         unsigned int,
+                         Scalar,
+                         Scalar>());
+        }
+    cls.def_property("num_swaps",
+                     &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::getNumSwap,
+                     &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::setNumSwap)
         .def_property("slab_width",
                       &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::getSlabWidth,
                       &md::ReverseNonequilibriumShearFlow<ParticleLoaderT>::setSlabWidth)

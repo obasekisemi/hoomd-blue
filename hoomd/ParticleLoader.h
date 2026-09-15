@@ -6,8 +6,11 @@
 
 namespace hoomd
     {
-struct ParticleLoader
+class ParticleLoader
     {
+    public:
+    static constexpr bool use_particle_group = true;
+
     ParticleLoader(std::shared_ptr<SystemDefinition> sysdef)
         : m_pdata(sysdef->getParticleData()) { }
     const auto& getPositions() const
@@ -27,14 +30,11 @@ struct ParticleLoader
         return m_pdata->getN();
         }
 
-    private:
-    std::shared_ptr<ParticleData> m_pdata; //!<  Particle data
-
-    public:
     class VelocityMassReader
         {
         public:
         VelocityMassReader(const Scalar4* vel) : m_vel(vel) { }
+
         void read(Scalar3& velocity, Scalar& mass, unsigned int idx) const
             {
             const Scalar4 vel = m_vel[idx];
@@ -47,10 +47,13 @@ struct ParticleLoader
         private:
         const Scalar4* m_vel;
         };
+
     VelocityMassReader makeVelocityMassReader(const Scalar4* vel) const
         {
         return VelocityMassReader(vel);
         }
-    };
 
+    private:
+    std::shared_ptr<ParticleData> m_pdata; //!< Particle data
+    };
     } // namespace hoomd

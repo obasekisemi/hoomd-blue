@@ -11,6 +11,8 @@ namespace mpcd
 class ParticleLoader
     {
     public:
+    static constexpr bool use_particle_group = false;
+
     ParticleLoader(std::shared_ptr<SystemDefinition> sysdef)
         : m_mpcd_pdata(sysdef->getMPCDParticleData())
         {
@@ -32,10 +34,6 @@ class ParticleLoader
         return m_mpcd_pdata->getN();
         }
 
-    private:
-    std::shared_ptr<mpcd::ParticleData> m_mpcd_pdata; //!< MPCD particle data
-
-    public:
     class VelocityMassReader
         {
         public:
@@ -56,11 +54,14 @@ class ParticleLoader
         const Scalar4* m_velcell;
         Scalar m_mass;
         };
+
     VelocityMassReader makeVelocityMassReader(const Scalar4* velcell) const
         {
         return VelocityMassReader(velcell, m_mpcd_pdata->getMass());
         }
+
+    private:
+    std::shared_ptr<mpcd::ParticleData> m_mpcd_pdata; //!< MPCD particle data
     };
     } // namespace mpcd
-
     } // namespace hoomd
