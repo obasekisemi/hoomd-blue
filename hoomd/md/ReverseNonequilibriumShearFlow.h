@@ -65,7 +65,7 @@ class PYBIND11_EXPORT ReverseNonequilibriumShearFlow
     virtual ~ReverseNonequilibriumShearFlow();
 
     //! Apply velocity swaps
-    virtual void update(uint64_t timestep);
+   void update(uint64_t timestep) override;
 
     //! Get the maximum number of swapped pairs
     Scalar getNumSwap() const
