@@ -56,16 +56,15 @@ class PYBIND11_EXPORT ReverseNonequilibriumShearFlow
     template<class T = ParticleLoaderT, std::enable_if_t<T::use_particle_group, bool> = true>
     ReverseNonequilibriumShearFlow(std::shared_ptr<SystemDefinition> sysdef,
                                    std::shared_ptr<Trigger> trigger,
-                                   std::shared_ptr<ParticleGroup> group,
                                    unsigned int num_swap,
                                    Scalar slab_width,
-                                   Scalar target_momentum);
+                                   Scalar target_momentum std::shared_ptr<ParticleGroup> group);
 
     //! Destructor
     virtual ~ReverseNonequilibriumShearFlow();
 
     //! Apply velocity swaps
-   void update(uint64_t timestep) override;
+    void update(uint64_t timestep) override;
 
     //! Get the maximum number of swapped pairs
     Scalar getNumSwap() const

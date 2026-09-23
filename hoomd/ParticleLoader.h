@@ -11,8 +11,10 @@ class ParticleLoader
     public:
     static constexpr bool use_particle_group = true;
 
-    ParticleLoader(std::shared_ptr<SystemDefinition> sysdef)
-        : m_pdata(sysdef->getParticleData()) { }
+    ParticleLoader(std::shared_ptr<SystemDefinition> sysdef, std::shared_ptr<ParticleGroup> group)
+        : m_pdata(sysdef->getParticleData()), m_group(group)
+        {
+        }
     const auto& getPositions() const
         {
         return m_pdata->getPositions();
@@ -27,8 +29,22 @@ class ParticleLoader
         }
     auto getN() const
         {
-        return m_pdata->getN();
+        return m_group->getNumMembers();
         }
+
+    class IndexReader
+        {
+        public:
+        IndexReader(const unsigned int* group_members) : m_group_members(group_members) { }
+
+        unsigned int operator()(unsigned int idx) const
+            {
+            return m_group_members[idx];
+            }
+
+        private:
+        const unsigned int* m_group_members;
+        };
 
     class VelocityMassReader
         {
@@ -55,5 +71,6 @@ class ParticleLoader
 
     private:
     std::shared_ptr<ParticleData> m_pdata; //!< Particle data
+    std::shared_ptr<ParticleGroup> m_group;
     };
     } // namespace hoomd

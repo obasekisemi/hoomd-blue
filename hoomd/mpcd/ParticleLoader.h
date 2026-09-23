@@ -33,6 +33,16 @@ class ParticleLoader
         {
         return m_mpcd_pdata->getN();
         }
+    class IndexReader
+        {
+        public:
+        IndexReader() { }
+
+        unsigned int operator()(unsigned int idx) const
+            {
+            return idx;
+            }
+        };
 
     class VelocityMassReader
         {
