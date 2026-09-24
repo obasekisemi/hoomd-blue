@@ -58,7 +58,8 @@ class PYBIND11_EXPORT ReverseNonequilibriumShearFlow
                                    std::shared_ptr<Trigger> trigger,
                                    unsigned int num_swap,
                                    Scalar slab_width,
-                                   Scalar target_momentum std::shared_ptr<ParticleGroup> group);
+                                   Scalar target_momentum,
+                                   std::shared_ptr<ParticleGroup> group);
 
     //! Destructor
     virtual ~ReverseNonequilibriumShearFlow();
@@ -100,7 +101,8 @@ class PYBIND11_EXPORT ReverseNonequilibriumShearFlow
         }
 
     protected:
-    ParticleLoaderT m_particle_loader; //!< Loader accessing Paritcle data
+    ParticleLoaderT m_particle_loader;                    //!< Loader accessing Paritcle data
+    typename ParticleLoaderT::IndexReader m_index_reader; //!< Reads Particles from group index
 
     unsigned int m_num_swap;  //!< Maximum number of swaps
     Scalar m_slab_width;      //!< Width of slabs
@@ -114,6 +116,7 @@ class PYBIND11_EXPORT ReverseNonequilibriumShearFlow
     unsigned int m_num_hi;             //!< Number of particles in upper slab
     GPUArray<Scalar2> m_particles_hi;  //!< Sorted particle indexes and momenta in upper slab
 
+    std::unique_ptr<ArrayHandle<unsigned int>> m_group_members; //!< Group member indexes
     std::vector<Scalar2> m_top_particles_lo; //!< Top candidates for swapping in lower slab
     std::vector<Scalar2> m_top_particles_hi; //!< Top candidates for swapping in upper slab
     unsigned int m_num_staged;               //!< Number of particles staged for swapping
@@ -172,11 +175,11 @@ template<class T, std::enable_if_t<T::use_particle_group, bool>>
 ReverseNonequilibriumShearFlow<ParticleLoaderT>::ReverseNonequilibriumShearFlow(
     std::shared_ptr<SystemDefinition> sysdef,
     std::shared_ptr<Trigger> trigger,
-    std::shared_ptr<ParticleGroup> group,
     unsigned int num_swap,
     Scalar slab_width,
-    Scalar target_momentum)
-    : Updater(sysdef, trigger), AddParticleGroup<true>(group), m_particle_loader(sysdef),
+    Scalar target_momentum,
+    std::shared_ptr<ParticleGroup> group)
+    : Updater(sysdef, trigger), AddParticleGroup<true>(group), m_particle_loader(sysdef, group),
       m_num_swap(num_swap), m_slab_width(slab_width), m_target_momentum(target_momentum),
       m_summed_momentum_exchange(0), m_num_lo(0), m_particles_lo(m_exec_conf), m_num_hi(0),
       m_particles_hi(m_exec_conf), m_update_slabs(true)
@@ -297,20 +300,31 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::findSwapParticles()
             m_num_hi = 0;
             const unsigned int N = m_particle_loader.getN();
             const auto reader = m_particle_loader.makeVelocityMassReader(h_vel.data);
+
+            if constexpr (ParticleLoaderT::use_particle_group)
+                {
+                m_group_members.reset(
+                    new ArrayHandle<unsigned int>(m_particle_loader.getGroup()->getIndexArray(),
+                                                  access_location::host,
+                                                  access_mode::read));
+                m_index_reader = typename ParticleLoaderT::IndexReader(m_group_members->data);
+                }
+
             for (unsigned int idx = 0; idx < N; ++idx)
                 {
+                const unsigned int pidx = m_index_reader(idx);
                 Scalar mass;
                 Scalar3 velocity;
-                reader.read(velocity, mass, idx);
+                reader.read(velocity, mass, pidx);
                 const Scalar momentum = velocity.x * mass;
-                const Scalar y = h_pos.data[idx].y;
+                const Scalar y = h_pos.data[pidx].y;
                 if (m_pos_lo.x <= y && y < m_pos_lo.y
                     && momentum > Scalar(0.0)) // lower slab, search for positive momentum
                     {
                     if (m_num_lo < num_lo_alloc)
                         {
                         h_particles_lo.data[m_num_lo]
-                            = make_scalar2(__int_as_scalar(idx), momentum);
+                            = make_scalar2(__int_as_scalar(pidx), momentum);
                         }
                     ++m_num_lo;
                     }
@@ -320,7 +334,7 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::findSwapParticles()
                     if (m_num_hi < num_hi_alloc)
                         {
                         h_particles_hi.data[m_num_hi]
-                            = make_scalar2(__int_as_scalar(idx), momentum);
+                            = make_scalar2(__int_as_scalar(pidx), momentum);
                         }
                     ++m_num_hi;
                     }
@@ -573,10 +587,10 @@ void export_ReverseNonequilibriumShearFlow(pybind11::module& m, const std::strin
         {
         cls.def(py::init<std::shared_ptr<SystemDefinition>,
                          std::shared_ptr<Trigger>,
-                         std::shared_ptr<ParticleGroup>,
                          unsigned int,
                          Scalar,
-                         Scalar>());
+                         Scalar,
+                         std::shared_ptr<ParticleGroup>>());
         }
     else
         {

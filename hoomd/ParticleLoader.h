@@ -31,10 +31,15 @@ class ParticleLoader
         {
         return m_group->getNumMembers();
         }
+    const auto& getGroup() const
+        {
+        return m_group;
+        }
 
     class IndexReader
         {
         public:
+        IndexReader() : m_group_members(nullptr) { }
         IndexReader(const unsigned int* group_members) : m_group_members(group_members) { }
 
         unsigned int operator()(unsigned int idx) const
@@ -70,7 +75,7 @@ class ParticleLoader
         }
 
     private:
-    std::shared_ptr<ParticleData> m_pdata; //!< Particle data
-    std::shared_ptr<ParticleGroup> m_group;
+    std::shared_ptr<ParticleData> m_pdata;  //!< Particle data
+    std::shared_ptr<ParticleGroup> m_group; //!< Group member indexes
     };
     } // namespace hoomd
