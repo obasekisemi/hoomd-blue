@@ -101,8 +101,7 @@ class PYBIND11_EXPORT ReverseNonequilibriumShearFlow
         }
 
     protected:
-    ParticleLoaderT m_particle_loader;                    //!< Loader accessing Paritcle data
-    typename ParticleLoaderT::IndexReader m_index_reader; //!< Reads Particles from group index
+    ParticleLoaderT m_particle_loader; //!< Loader accessing Paritcle data
 
     unsigned int m_num_swap;  //!< Maximum number of swaps
     Scalar m_slab_width;      //!< Width of slabs
@@ -116,7 +115,6 @@ class PYBIND11_EXPORT ReverseNonequilibriumShearFlow
     unsigned int m_num_hi;             //!< Number of particles in upper slab
     GPUArray<Scalar2> m_particles_hi;  //!< Sorted particle indexes and momenta in upper slab
 
-    std::unique_ptr<ArrayHandle<unsigned int>> m_group_members; //!< Group member indexes
     std::vector<Scalar2> m_top_particles_lo; //!< Top candidates for swapping in lower slab
     std::vector<Scalar2> m_top_particles_hi; //!< Top candidates for swapping in upper slab
     unsigned int m_num_staged;               //!< Number of particles staged for swapping
@@ -298,21 +296,23 @@ void ReverseNonequilibriumShearFlow<ParticleLoaderT>::findSwapParticles()
             // filter particles into their slab in y-direction and record momentum in x-direction
             m_num_lo = 0;
             m_num_hi = 0;
+            typename ParticleLoaderT::IndexReader index_reader;
+            std::unique_ptr<ArrayHandle<unsigned int>> group_members;
             const unsigned int N = m_particle_loader.getN();
             const auto reader = m_particle_loader.makeVelocityMassReader(h_vel.data);
 
             if constexpr (ParticleLoaderT::use_particle_group)
                 {
-                m_group_members.reset(
+                group_members.reset(
                     new ArrayHandle<unsigned int>(m_particle_loader.getGroup()->getIndexArray(),
                                                   access_location::host,
                                                   access_mode::read));
-                m_index_reader = typename ParticleLoaderT::IndexReader(m_group_members->data);
+                index_reader = typename ParticleLoaderT::IndexReader(group_members->data);
                 }
 
             for (unsigned int idx = 0; idx < N; ++idx)
                 {
-                const unsigned int pidx = m_index_reader(idx);
+                const unsigned int pidx = index_reader(idx);
                 Scalar mass;
                 Scalar3 velocity;
                 reader.read(velocity, mass, pidx);
