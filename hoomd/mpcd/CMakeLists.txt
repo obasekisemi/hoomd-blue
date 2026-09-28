@@ -4,6 +4,7 @@ if(NOT BUILD_MD)
 endif()
 
 set(_mpcd_cc_sources
+    export_ReverseNonequilibriumShearFlow.cc
     module.cc
     ATCollisionMethod.cc
     CellCommunicator.cc
@@ -39,11 +40,10 @@ set(_mpcd_headers
     ParticleData.h
     ParticleDataSnapshot.h
     ParticleDataUtilities.h
+    ParticleLoader.h
     ParallelPlateGeometryFiller.h
     PlanarPoreGeometryFiller.h
     RejectionVirtualParticleFiller.h
-    ReverseNonequilibriumShearFlow.h
-    ReverseNonequilibriumShearFlowUtilities.h
     Sorter.h
     SRDCollisionMethod.h
     StreamingMethod.h

@@ -155,6 +155,7 @@ set(_hoomd_headers
     ParticleGroup.cuh
     ParticleGroup.h
     ParticleFilterUpdater.h
+    ParticleLoader.h
     PythonLocalDataAccess.h
     PythonUpdater.h
     PythonAnalyzer.h
