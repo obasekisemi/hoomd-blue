@@ -280,6 +280,7 @@ list(APPEND _md_sources ActiveForceComputeGPU.cc
                            ComputeThermoGPU.cc
                            ComputeThermoHMAGPU.cc
                            ConstantForceComputeGPU.cc
+                           export_ReverseNonequilibriumShearFlowGPU.cc
                            FIREEnergyMinimizerGPU.cc
                            ForceCompositeGPU.cc
                            ForceDistanceConstraintGPU.cc
@@ -350,6 +351,7 @@ set(_md_cu_sources ActiveForceComputeGPU.cu
                       TwoStepRATTLENVEGPU.cu
             	      VolumeConservationMeshForceComputeGPU.cu
                       MuellerPlatheFlowGPU.cu
+                      ReverseNonequilibriumShearFlowGPUKernel.cu
                       CosineSqAngleForceGPU.cu
                       )
 

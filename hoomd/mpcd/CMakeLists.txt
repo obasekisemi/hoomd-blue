@@ -74,6 +74,7 @@ if(ENABLE_HIP)
         CellThermoComputeGPU.cc
         CellListGPU.cc
         CommunicatorGPU.cc
+        export_ReverseNonequilibriumShearFlowGPU.cc
         ParallelPlateGeometryFillerGPU.cc
         PlanarPoreGeometryFillerGPU.cc
         ReverseNonequilibriumShearFlowGPU.cc
@@ -103,8 +104,6 @@ if(ENABLE_HIP)
         PlanarPoreGeometryFillerGPU.h
         RejectionVirtualParticleFillerGPU.cuh
         RejectionVirtualParticleFillerGPU.h
-        ReverseNonequilibriumShearFlowGPU.cuh
-        ReverseNonequilibriumShearFlowGPU.h
         SorterGPU.cuh
         SorterGPU.h
         SRDCollisionMethodGPU.cuh
@@ -121,7 +120,7 @@ if(ENABLE_HIP)
         ParallelPlateGeometryFillerGPU.cu
         PlanarPoreGeometryFillerGPU.cu
         RejectionVirtualParticleFillerGPU.cu
-        ReverseNonequilibriumShearFlowGPU.cu
+        ReverseNonequilibriumShearFlowGPUKernel.cu
         SorterGPU.cu
         SRDCollisionMethodGPU.cu
         )

@@ -206,7 +206,7 @@ class TestReverseNonequilibriumShearFlow:
             snap.particles.types = ["A", "B"]
             snap.particles.typeid[:] = [1, 1, 0, 0, 0, 0]
 
-            # set initial positions and velocities
+            # the particle positions of type B is chosen to be in upper and lower slab
             snap.particles.position[0] = [1.5, 0.2, 1.0]
             snap.particles.position[1] = [2.5, -9.5, 2.0]
             snap.particles.position[2] = [1.0, 0.5, 2.0]
@@ -214,8 +214,9 @@ class TestReverseNonequilibriumShearFlow:
             snap.particles.position[4] = [1.0, -9.7, 3.0]
             snap.particles.position[5] = [3.0, -9.2, 1.0]
 
-            snap.particles.velocity[0] = [-12.0, 2.0, 1.0]
-            snap.particles.velocity[1] = [6.0, -1.0, 2.0]
+            # the velocities of type B are chosen to be the same as target momentum
+            snap.particles.velocity[0] = [-2.0, 2.0, 1.0]
+            snap.particles.velocity[1] = [2.0, -1.0, 2.0]
             snap.particles.velocity[2] = [-9.0, 4.0, 5.0]
             snap.particles.velocity[3] = [-1.0, 1.0, 3.0]
             snap.particles.velocity[4] = [1.0, -2.0, 4.0]
@@ -223,7 +224,11 @@ class TestReverseNonequilibriumShearFlow:
 
             # set up simulation
             flow = hoomd.md.update.ReverseNonequilibriumShearFlow(
-                trigger=1, filter=hoomd.filter.Type(["A"]), num_swaps=1, slab_width=1.0
+                trigger=1,
+                filter=hoomd.filter.Type(["A"]),
+                num_swaps=1,
+                slab_width=1.0,
+                target_momentum=2.0,
             )
             sim = simulation_factory(snap)
             sim.operations.integrator = hoomd.md.Integrator(dt=0.09)
@@ -232,13 +237,13 @@ class TestReverseNonequilibriumShearFlow:
 
             snap = sim.state.get_snapshot()
             if snap.communicator.rank == 0:
-                # check that the type B particles are not swapped
-                assert np.allclose(snap.particles.velocity[0], [-12.0, 2.0, 1.0])
-                assert np.allclose(snap.particles.velocity[1], [6.0, -1.0, 2.0])
-                assert np.allclose(snap.particles.velocity[2], [3.0, 4.0, 5.0])
-                assert np.allclose(snap.particles.velocity[3], [-1.0, 1.0, 3.0])
-                assert np.allclose(snap.particles.velocity[4], [1.0, -2.0, 4.0])
-                assert np.allclose(snap.particles.velocity[5], [-9.0, -4.0, -1.0])
+                # if particles of type A are filtered, B won't be swapped
+                assert np.allclose(snap.particles.velocity[0], [-2.0, 2.0, 1.0])
+                assert np.allclose(snap.particles.velocity[1], [2.0, -1.0, 2.0])
+                assert np.allclose(snap.particles.velocity[2], [-9.0, 4.0, 5.0])
+                assert np.allclose(snap.particles.velocity[3], [1.0, 1.0, 3.0])
+                assert np.allclose(snap.particles.velocity[4], [-1.0, -2.0, 4.0])
+                assert np.allclose(snap.particles.velocity[5], [3, -4.0, -1.0])
 
     def test_logging(self):
         logging_check(
