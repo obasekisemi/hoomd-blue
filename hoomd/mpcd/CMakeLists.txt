@@ -4,6 +4,7 @@ if(NOT BUILD_MD)
 endif()
 
 set(_mpcd_cc_sources
+    export_ReverseNonequilibriumShearFlow.cc
     module.cc
     ATCollisionMethod.cc
     CellCommunicator.cc
@@ -39,11 +40,10 @@ set(_mpcd_headers
     ParticleData.h
     ParticleDataSnapshot.h
     ParticleDataUtilities.h
+    ParticleLoader.h
     ParallelPlateGeometryFiller.h
     PlanarPoreGeometryFiller.h
     RejectionVirtualParticleFiller.h
-    ReverseNonequilibriumShearFlow.h
-    ReverseNonequilibriumShearFlowUtilities.h
     Sorter.h
     SRDCollisionMethod.h
     StreamingMethod.h
@@ -74,6 +74,7 @@ if(ENABLE_HIP)
         CellThermoComputeGPU.cc
         CellListGPU.cc
         CommunicatorGPU.cc
+        export_ReverseNonequilibriumShearFlowGPU.cc
         ParallelPlateGeometryFillerGPU.cc
         PlanarPoreGeometryFillerGPU.cc
         ReverseNonequilibriumShearFlowGPU.cc
@@ -103,8 +104,6 @@ if(ENABLE_HIP)
         PlanarPoreGeometryFillerGPU.h
         RejectionVirtualParticleFillerGPU.cuh
         RejectionVirtualParticleFillerGPU.h
-        ReverseNonequilibriumShearFlowGPU.cuh
-        ReverseNonequilibriumShearFlowGPU.h
         SorterGPU.cuh
         SorterGPU.h
         SRDCollisionMethodGPU.cuh
@@ -121,7 +120,7 @@ if(ENABLE_HIP)
         ParallelPlateGeometryFillerGPU.cu
         PlanarPoreGeometryFillerGPU.cu
         RejectionVirtualParticleFillerGPU.cu
-        ReverseNonequilibriumShearFlowGPU.cu
+        ReverseNonequilibriumShearFlowGPUKernel.cu
         SorterGPU.cu
         SRDCollisionMethodGPU.cu
         )
