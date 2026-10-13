@@ -1,13 +1,12 @@
 // Copyright (c) 2009-2026 The Regents of the University of Michigan.
 // Part of HOOMD-blue, released under the BSD 3-Clause License.
 
-#include "ParticleLoader.h"
-#include "hoomd/ParticleLoader.h"
 #include "hoomd/md/ReverseNonequilibriumShearFlowGPU.cuh"
+#include "hoomd/mpcd/ParticleLoader.h"
 
 namespace hoomd
     {
-namespace mpcd
+namespace md
     {
 namespace gpu
     {
@@ -20,7 +19,7 @@ template cudaError_t rnes_filter_particles<hoomd::mpcd::ParticleLoader::IndexRea
     const Scalar4* d_pos,
     const Scalar4* d_vel,
     const hoomd::mpcd::ParticleLoader::IndexReader&,
-    consthoomd::mpcd::ParticleLoader::VelocityMassReader&,
+    const hoomd::mpcd::ParticleLoader::VelocityMassReader&,
     const Scalar2& pos_lo,
     const Scalar2& pos_hi,
     const unsigned int num_lo_alloc,
@@ -37,5 +36,5 @@ template cudaError_t rnes_swap_particles<hoomd::mpcd::ParticleLoader::VelocityMa
     const unsigned int block_size);
 
     } // end namespace gpu
-    } // end namespace mpcd
+    } // end namespace md
     } // end namespace hoomd
