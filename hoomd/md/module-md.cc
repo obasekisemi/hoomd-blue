@@ -143,6 +143,7 @@ void export_TwoStepConstantPressure(pybind11::module& m);
 void export_TwoStepNVTAlchemy(pybind11::module& m);
 void export_FIREEnergyMinimizer(pybind11::module& m);
 void export_MuellerPlatheFlow(pybind11::module& m);
+void export_ReverseNonequilibriumShearFlow(pybind11::module& m);
 void export_AlchemostatTwoStep(pybind11::module& m);
 void export_HalfStepHook(pybind11::module& m);
 
@@ -298,6 +299,7 @@ void export_TwoStepBDGPU(pybind11::module& m);
 void export_TwoStepConstantPressureGPU(pybind11::module& m);
 void export_FIREEnergyMinimizerGPU(pybind11::module& m);
 void export_MuellerPlatheFlowGPU(pybind11::module& m);
+void export_ReverseNonequilibriumShearFlowGPU(pybind11::module&);
 
 void export_TwoStepRATTLEBDGPUCylinder(pybind11::module& m);
 void export_TwoStepRATTLEBDGPUDiamond(pybind11::module& m);
@@ -585,6 +587,7 @@ PYBIND11_MODULE(_md, m)
     export_TwoStepConstantPressure(m);
     export_FIREEnergyMinimizer(m);
     export_MuellerPlatheFlow(m);
+    export_ReverseNonequilibriumShearFlow(m);
     export_AlchemostatTwoStep(m);
     export_TwoStepNVTAlchemy(m);
     export_HalfStepHook(m);
@@ -621,6 +624,7 @@ PYBIND11_MODULE(_md, m)
     export_TwoStepConstantPressureGPU(m);
     export_FIREEnergyMinimizerGPU(m);
     export_MuellerPlatheFlowGPU(m);
+    export_ReverseNonequilibriumShearFlowGPU(m);
 
     export_TwoStepRATTLEBDGPUCylinder(m);
     export_TwoStepRATTLEBDGPUDiamond(m);

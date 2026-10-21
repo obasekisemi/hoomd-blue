@@ -6,8 +6,8 @@
  * \brief Helper functions for Reverse nonequilibrium shear flow
  */
 
-#ifndef MPCD_REVERSE_NONEQUILIBRIUM_SHEAR_FLOW_UTILITIES_H_
-#define MPCD_REVERSE_NONEQUILIBRIUM_SHEAR_FLOW_UTILITIES_H_
+#ifndef MD_REVERSE_NONEQUILIBRIUM_SHEAR_FLOW_UTILITIES_H_
+#define MD_REVERSE_NONEQUILIBRIUM_SHEAR_FLOW_UTILITIES_H_
 
 #include "hoomd/HOOMDMath.h"
 
@@ -19,7 +19,7 @@
 
 namespace hoomd
     {
-namespace mpcd
+namespace md
     {
 namespace detail
     {
@@ -119,9 +119,9 @@ class MinimumMomentum
     };
 
     } // end namespace detail
-    } // end namespace mpcd
+    } // end namespace md
     } // end namespace hoomd
 
 #undef HOSTDEVICE
 
-#endif // MPCD_REVERSE_NONEQUILIBRIUM_SHEAR_FLOW_UTILITIES_H_
+#endif // MD_REVERSE_NONEQUILIBRIUM_SHEAR_FLOW_UTILITIES_H_

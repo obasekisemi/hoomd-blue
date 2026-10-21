@@ -20,6 +20,7 @@ set(_md_sources module-md.cc
                    CosineSqAngleForceCompute.cc
                    CustomForceCompute.cc
                    EvaluatorWalls.cc
+                   export_ReverseNonequilibriumShearFlow.cc
                    FIREEnergyMinimizer.cc
                    ForceComposite.cc
                    ForceDistanceConstraint.cc
@@ -222,6 +223,8 @@ set(_md_headers ActiveForceComputeGPU.h
                 FrictionPairGPU.cuh
                 FrictionPairGPU.h
                 FrictionPair.h
+                ReverseNonequilibriumShearFlow.h
+                ReverseNonequilibriumShearFlowUtilities.h
                 TableAngleForceComputeGPU.h
                 TableAngleForceCompute.h
                 TableAngleForceGPU.cuh
@@ -277,6 +280,7 @@ list(APPEND _md_sources ActiveForceComputeGPU.cc
                            ComputeThermoGPU.cc
                            ComputeThermoHMAGPU.cc
                            ConstantForceComputeGPU.cc
+                           export_ReverseNonequilibriumShearFlowGPU.cc
                            FIREEnergyMinimizerGPU.cc
                            ForceCompositeGPU.cc
                            ForceDistanceConstraintGPU.cc
@@ -347,6 +351,7 @@ set(_md_cu_sources ActiveForceComputeGPU.cu
                       TwoStepRATTLENVEGPU.cu
             	      VolumeConservationMeshForceComputeGPU.cu
                       MuellerPlatheFlowGPU.cu
+                      ReverseNonequilibriumShearFlowGPUKernel.cu
                       CosineSqAngleForceGPU.cu
                       )
 

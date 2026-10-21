@@ -33,6 +33,7 @@ set(files __init__.py
     test_patch.py
     test_potential.py
     test_pppm_coulomb.py
+    test_reverse_nonequilibrium_flow.py
     test_reverse_perturbation_flow.py
     test_rigid.py
     test_special_pair.py
